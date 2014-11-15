@@ -13,7 +13,6 @@
 #include "list.h"
 #include "list.c"
 
-//fuck this
 /* ***************************** 
      stage 1 library functions
    ***************************** */
@@ -33,25 +32,7 @@ void ta_create(void (*func)(void *), void *arg) {
 #define STACKSIZE 128000
 	thread_count+=1;
 	unsigned char *stack = (unsigned char *)malloc(STACKSIZE);
-	//struct node *thread=malloc(sizeof(struct node));
-	/*thread->next=NULL;
-	thread->id=thread_count;
-	
-	if (head == NULL){
-		head=thread;
-	}
-	else{
-		struct node *iterator=head;
-		struct node *prev=head;
-		iterator=iterator->next;
-		
-		while (iterator!=NULL){
-			prev=iterator;
-			iterator=iterator->next;
-		}
-		prev->next = thread;
-		//thread->next=NULL
-	}*/
+
 	ucontext_t ctx;
 	struct node *thread = list_append(&head, ctx, thread_count);
     assert(stack && thread);
@@ -68,28 +49,31 @@ void ta_create(void (*func)(void *), void *arg) {
     /* pass 2 argument (int values 1 and 13) to the function */
     makecontext(&(thread->ctx), (void (*)(void))func,1,arg);
 	
-	//free(stack);
 	return;
 }
 
 void ta_yield(void) {
 	struct node *tmp = head;
-	printf("about to push to the back");
-	fflush(stdout);
 	list_pushtoback(&head);
-	printf("Current Thread ID: %d\n", head->id);
-	fflush(stdout);
 	assert(swapcontext(&(tmp->ctx),&(head->ctx))!=-1); 
-	printf("New Thread ID: %d\n", head->id);
-	fflush(stdout);
 
     return;
 }
 
 int ta_waitall(void) {
-	swapcontext(&mctx, &(head->ctx));
-	list_delete(head);
-	return 0;
+	struct node *iterator = head;
+	while (1){
+		swapcontext(&mctx,&(head->ctx));
+		if(head->next==NULL){
+			list_delete(head);
+			return 0;
+		}
+		else{
+			head=head->next;
+		}
+		
+	}
+	return -1;
 
 }
 
