@@ -106,15 +106,31 @@ void ta_sem_wait(tasem_t *sem) {
 }
 
 void ta_lock_init(talock_t *mutex) {
+	mutex->lock = malloc(sizeof(tasem_t));
+	mutex->lock->val = 0;
+	mutex->lock->list_head = malloc(sizeof(struct node));
+	
 }
 
 void ta_lock_destroy(talock_t *mutex) {
+	list_delete(mutex->lock->list_head);
+	free(mutex->lock);
 }
 
 void ta_lock(talock_t *mutex) {
+	while (mutex->lock->val == 1){
+		ta_yield();
+	}
+	mutex->lock->val=1;
+
 }
 
 void ta_unlock(talock_t *mutex) {
+	if (mutex->lock->val==0){
+		printf("Already unlocked!!!\n");
+	}
+	mutex->lock->val=0;
+	
 }
 
 

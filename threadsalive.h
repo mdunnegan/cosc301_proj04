@@ -15,7 +15,7 @@ typedef struct {
 } tasem_t;
 
 typedef struct {
-    
+    tasem_t *lock;
 } talock_t;
 
 typedef struct {
