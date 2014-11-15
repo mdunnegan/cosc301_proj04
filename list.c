@@ -35,7 +35,6 @@ void list_remove(struct node *head){
 		}
 }
 void list_pushtoback(struct node **head){
-		printf("entered pushtoback\n");
 		fflush(stdout);
 		if (*head==NULL){
 			printf("Error what did you do...\n");
@@ -56,11 +55,11 @@ void list_pushtoback(struct node **head){
 		//pop head from front...
 		assert((*head)->next);
 
-		printf("Old Head:%d\t", (*head)->id); 
-		fflush(stdout);
+		//printf("Old Head:%d\t", (*head)->id); 
+		//fflush(stdout);
 		*head=(*head)->next;
 		end->next=NULL;
-		printf("New Head:%d\n", (*head)->id); 
+		//printf("New Head:%d\n", (*head)->id); 
 
 }
 		
