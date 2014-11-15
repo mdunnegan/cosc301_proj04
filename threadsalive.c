@@ -88,6 +88,9 @@ void ta_sem_init(tasem_t *sem, int value) {
 }
 
 void ta_sem_destroy(tasem_t *sem) {
+	list_delete(sem->list_head);
+	//free(sem);
+
 }
 
 void ta_sem_post(tasem_t *sem) {
