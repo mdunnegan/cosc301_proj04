@@ -64,13 +64,13 @@ void ta_yield(void) {
 int ta_waitall(void) {
 	struct node *iterator = head;
 	while (1){
-		swapcontext(&mctx,&(head->ctx));
-		if(head->next==NULL){
+		swapcontext(&mctx,&(iterator->ctx));
+		if(iterator->next==NULL){
 			list_delete(head);
 			return 0;
 		}
 		else{
-			head=head->next;
+			iterator=iterator->next;
 		}
 		
 	}
