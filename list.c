@@ -63,8 +63,6 @@ void list_pushtoback(struct node **head){
 
 }
 		
-		
-		
 void list_print(struct node *list) {
         //cycle through each element and print it out...
 		printf("Printing List:\n");

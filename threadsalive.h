@@ -10,11 +10,12 @@
    *************************** */
 
 typedef struct {
-
+    int val;
+    struct node *list_head; // list of pointers to threads
 } tasem_t;
 
 typedef struct {
-
+    
 } talock_t;
 
 typedef struct {
