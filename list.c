@@ -35,21 +35,32 @@ void list_remove(struct node *head){
 		}
 }
 void list_pushtoback(struct node **head){
-		if (head==NULL){
+		printf("entered pushtoback\n");
+		fflush(stdout);
+		if (*head==NULL){
 			printf("Error what did you do...\n");
+			return;
 		}
+		assert ((*head)->next);
 		struct node *end =*head;
 		struct node *iterator=*head;
 		struct node *prev=*head;
 		while (iterator!=NULL){
+			assert(prev->next);
+			//assert(*head->next);
+			//printf("Prev: %d\t Current: %d\t End:%d\t Head: %d\n", prev->id, iterator->id, end->id, (*head)->id);
 			prev=iterator;
 			iterator=iterator->next;
 		}
 		prev->next=end; //tack on the head of the queue to the end.
-		end->next=NULL;
-
 		//pop head from front...
+		assert((*head)->next);
+
+		printf("Old Head:%d\t", (*head)->id); 
+		fflush(stdout);
 		*head=(*head)->next;
+		end->next=NULL;
+		printf("New Head:%d\n", (*head)->id); 
 
 }
 		
@@ -57,11 +68,12 @@ void list_pushtoback(struct node **head){
 		
 void list_print(struct node *list) {
         //cycle through each element and print it out...
-		printf("should print list...\n");
+		printf("Printing List:\n");
         while (list != NULL) {
                 printf("%i\n", list->id);
                 list = list->next;
         }
+		printf("Done printing list\n");
 }
 
 void list_delete(struct node *list) {
@@ -70,5 +82,6 @@ void list_delete(struct node *list) {
                 struct node *tmp = list;
                 list = list->next;
                 free(tmp);
+				free(tmp->ctx.uc_stack.ss_sp);
         }
 }
