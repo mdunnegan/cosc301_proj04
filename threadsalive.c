@@ -37,44 +37,54 @@ void ta_create(void (*func)(void *), void *arg) {
 
 	ucontext_t ctx;
 	struct node *thread = list_append(&head, ctx, thread_count);
-  assert(stack && thread);
+  	assert(stack && thread);
 /* context for thread */
-  getcontext(&(thread->ctx));
+  	getcontext(&(thread->ctx));
   /* set up thread's stack */
-  thread->ctx.uc_stack.ss_sp   = stack;
-  thread->ctx.uc_stack.ss_size = STACKSIZE;
+  	thread->ctx.uc_stack.ss_sp   = stack;
+  	thread->ctx.uc_stack.ss_size = STACKSIZE;
 
   /* set up thread's link: when thread exits, the main thread
    * (context 0) will take over */
-  thread->ctx.uc_link = &mctx;
+  	thread->ctx.uc_link = &mctx;
   /* set the thread entry point (function) for thread 1 */
   /* pass 2 argument (int values 1 and 13) to the function */
-  makecontext(&(thread->ctx), (void (*)(void))func,1,arg);
+  	makecontext(&(thread->ctx), (void (*)(void))func,1,arg);
 
 	return;
 }
 
 void ta_yield(void) {
-	struct node *tmp = head;
-	list_pushtoback(&head);
-	assert(swapcontext(&(tmp->ctx),&(head->ctx))!=-1); 
-  return;
+	if(head->next!=NULL){
+		struct node *tmp = head;
+		list_pushtoback(&head);
+		assert(swapcontext(&(tmp->ctx),&(head->ctx))!=-1); 
+	}
+
+  	return;
 }
 
 int ta_waitall(void) {
 	struct node *iterator = head;
-	while (1){
+	if (iterator==NULL){
+		return -1;
+	}
+	for (int i=0; i<thread_count;i++){
+		if (i>=thread_count){
+			list_delete(head);
+			return -1;
+		}
 		swapcontext(&mctx,&(iterator->ctx));
 		if(iterator->next==NULL){
-			list_delete(head);
-			return 0;
+			continue;
+				
 		}
 		else{
 			iterator=iterator->next;
-		}
-		
+		}	
 	}
-	return -1;
+	list_delete(head);
+	return 0;
 
 }
 
@@ -89,20 +99,24 @@ void ta_sem_init(tasem_t *sem, int value) {
 
 void ta_sem_destroy(tasem_t *sem) {
 	list_delete(sem->list_head);
-	//free(sem);
 
 }
 
 void ta_sem_post(tasem_t *sem) {
     (sem -> val)++; 
+	if (sem->val>0 && sem->list_head->next!=NULL){
+		ta_yield();
+	}
 }
 
 void ta_sem_wait(tasem_t *sem) {
-    (sem -> val)--;
-
-    while ((sem -> val) < 0){
-        ta_yield();
-    }
+	while (sem->val==0){
+		ta_yield();
+		//swapcontext(&sem->list_head->ctx,&(sem->list_head->next->ctx));
+	}
+	if (sem->val>0){
+    	(sem -> val)--;
+	}
 }
 
 void ta_lock_init(talock_t *mutex) {
@@ -118,7 +132,7 @@ void ta_lock_destroy(talock_t *mutex) {
 }
 
 void ta_lock(talock_t *mutex) {
-	while (mutex->lock->val == 1){
+	if (mutex->lock->val == 1){
 		ta_yield();
 	}
 	mutex->lock->val=1;
@@ -126,10 +140,8 @@ void ta_lock(talock_t *mutex) {
 }
 
 void ta_unlock(talock_t *mutex) {
-	if (mutex->lock->val==0){
-		printf("Already unlocked!!!\n");
-	}
 	mutex->lock->val=0;
+	//ta_sem_post(mutex->lock);
 	
 }
 
@@ -137,16 +149,25 @@ void ta_unlock(talock_t *mutex) {
 /* ***************************** 
      stage 3 library functions
    ***************************** */
+talock_t *lock;
 
 void ta_cond_init(tacond_t *cond) {
+	cond->queue_head = malloc(sizeof(struct node));
 }
 
 void ta_cond_destroy(tacond_t *cond) {
+	list_delete(cond->queue_head);
 }
 
 void ta_wait(talock_t *mutex, tacond_t *cond) {
+	lock=mutex;
+	list_append(&cond->queue_head, cond->queue_head->ctx,1);
+	ta_yield();
 }
 
 void ta_signal(tacond_t *cond) {
+	if (cond->queue_head != NULL){
+		ta_lock(lock);
+	}
 }
 

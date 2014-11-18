@@ -19,7 +19,7 @@ typedef struct {
 } talock_t;
 
 typedef struct {
-
+	struct node *queue_head;
 } tacond_t;
 
 
